@@ -166,9 +166,10 @@ export default class Video {
 
 			// Round robin edges with download enabled
 			const edges = cdnInfo.edges.filter((edge) => edge.allowDownload);
+			
 			if (Video.edgeSelector > edges.length - 1) Video.edgeSelector = 0;
 			const downloadEdge = edges[Video.edgeSelector++];
-
+			
 			if (settings.floatplane.downloadEdge !== "") downloadEdge.hostname = settings.floatplane.downloadEdge;
 
 			// Sort qualities from highest to smallest

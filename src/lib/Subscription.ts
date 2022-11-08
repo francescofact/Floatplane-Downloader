@@ -81,24 +81,26 @@ export default class Subscription {
 		return this.defaultChannel.addVideo(video);
 	}
 
-	public async fetchNewVideos(videosToSearch = 20, stripSubchannelPrefix: boolean, forceFullSearch: boolean): Promise<Video[]> {
+	public async fetchNewVideos(videosToSearch = 10000, stripSubchannelPrefix: boolean, forceFullSearch: boolean): Promise<Video[]> {
 		const coloredTitle = `${this.defaultChannel.consoleColor || "\u001b[38;5;208m"}${this.defaultChannel.title}\u001b[0m`;
 
 		const videos: Video[] = [];
 
 		process.stdout.write(`> Fetching latest videos from [${coloredTitle}]... Fetched ${videos.length} videos!`);
 
-		for await (const blogPost of fApi.creator.blogPostsIterable(this.creatorId, { hasVideo: true })) {
+		for await (const blogPost of fApi.creator.blogPostsIterable(this.creatorId, { hasVideo: true, search: "exclusive", sort: "DESC" })) {
 			const video = this.addVideo(blogPost, stripSubchannelPrefix);
 			if (video === null) continue;
 			// If we have found the last seen video, check if its downloaded.
 			// If it is then break here and return the videos we have found.
 			// Otherwise continue to fetch new videos up to the videosToSearch limit to ensure partially or non downloaded videos are returned.
+			if (!video.title.toLowerCase().includes('fp exclusive')){
+				process.stdout.write(`\r> Skipped`);
+			}
 			if (!forceFullSearch && video.guid === this.lastSeenVideo.guid && (await video.isDownloaded())) break;
+			
 			videos.push(video);
-			// Stop searching if we have looked through videosToSearch
-			if (videos.length >= videosToSearch) break;
-			process.stdout.write(`\r> Fetching latest videos from [${coloredTitle}]... Fetched ${videos.length} videos!`);
+			process.stdout.write(`\r> Fetching latest videos from [${coloredTitle}]... Fetched ${videos.length} videos! ${video.title}`);
 		}
 		process.stdout.write(` Skipped ${videos.length - videos.length}.\n`);
 		return videos;

@@ -73,9 +73,9 @@ export default class Downloader {
 		);
 		// (videos remaining * avg time to download a video)
 		const totalVideos = this.videoQueue.length + this.videosProcessed + this.videosProcessing;
-		const processed = `Processed:        ${ye(this.videosProcessed)}/${ye(totalVideos)}`;
-		const downloaded = `Total Downloaded: ${cy(downloadedMB.toFixed(2))}/${cy(totalMB.toFixed(2) + "MB")}`;
-		const speed = `Download Speed:   ${gr(((downloadSpeed / 1024000) * 8).toFixed(2) + "Mb/s")}`;
+		const processed = `Processed: ${ye(this.videosProcessed)}/${ye(totalVideos)}`;
+		const downloaded = `Total: ${cy(downloadedMB.toFixed(2))}/${cy(totalMB.toFixed(2) + "MB")}`;
+		const speed = `Speed: ${gr((downloadSpeed / 1024000).toFixed(2) + "MB/s")}`;
 		this.mpb?.setFooter({
 			message: `${processed}    ${downloaded}    ${speed}`,
 			pattern: "",
@@ -97,12 +97,7 @@ export default class Downloader {
 	private async processVideo(video: Video, retries = 0): Promise<void> {
 		let formattedTitle: string;
 		if (args.headless === true) formattedTitle = `${video.channel.title} - ${video.title}`;
-		else if (video.channel.consoleColor !== undefined) {
-			formattedTitle = `${video.channel.consoleColor}${video.channel.title}${reset} - ${video.title}`.slice(
-				0,
-				32 + video.channel.consoleColor.length + reset.length
-			);
-		} else formattedTitle = `${video.channel.title} - ${video.title}`.slice(0, 32);
+		else formattedTitle = `${video.channel.title} - ${video.title}`.slice(-32);
 
 		if (this.summaryStats !== undefined) while (formattedTitle in this.summaryStats) formattedTitle = `.${formattedTitle}`.slice(0, 32);
 
